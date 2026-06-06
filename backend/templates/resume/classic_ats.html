@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>{{ resume.name }} - Resume</title>
+    <style>
+        @page {
+            size: letter;
+            margin: 0.7in;
+        }
+        body {
+            font-family: "Calibri", "Arial", sans-serif;
+            color: #333333;
+            line-height: 1.4;
+            font-size: 10.5pt;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            font-size: 20pt;
+            margin: 0 0 4px 0;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: {{ theme_color or '#111827' }};
+        }
+        .subtitle {
+            text-align: center;
+            font-size: 9.5pt;
+            color: #4B5563;
+            margin-bottom: 15px;
+        }
+        .subtitle a {
+            color: #4B5563;
+            text-decoration: none;
+        }
+        .section-title {
+            font-size: 11pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            border-bottom: 1px solid {{ theme_color or '#111827' }};
+            color: {{ theme_color or '#111827' }};
+            margin-top: 15px;
+            margin-bottom: 8px;
+            padding-bottom: 2px;
+            letter-spacing: 0.5px;
+        }
+        .summary-text {
+            margin-bottom: 10px;
+            text-align: justify;
+        }
+        .entry {
+            margin-bottom: 10px;
+        }
+        .entry-header {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            font-size: 10.5pt;
+        }
+        .entry-subheader {
+            display: flex;
+            justify-content: space-between;
+            font-style: italic;
+            font-size: 10pt;
+            color: #4B5563;
+            margin-bottom: 4px;
+        }
+        ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        li {
+            margin-bottom: 3px;
+            text-align: justify;
+        }
+        .skills-grid {
+            margin-bottom: 8px;
+        }
+        .skills-category {
+            margin-bottom: 4px;
+        }
+        .skills-category strong {
+            font-size: 10pt;
+        }
+    </style>
+</head>
+<body>
+    <h1>{{ resume.name }}</h1>
+    <div class="subtitle">
+        {% if resume.email %}{{ resume.email }}{% endif %}
+        {% if resume.phone %} | {{ resume.phone }}{% endif %}
+        {% if resume.location %} | {{ resume.location }}{% endif %}
+        <br>
+        {% if resume.linkedin %}<a href="{{ resume.linkedin }}">LinkedIn</a>{% endif %}
+        {% if resume.github %} | <a href="{{ resume.github }}">GitHub</a>{% endif %}
+    </div>
+
+    {% if resume.summary %}
+    <div class="section-title">Summary</div>
+    <div class="summary-text">{{ resume.summary }}</div>
+    {% endif %}
+
+    {% if resume.experience %}
+    <div class="section-title">Experience</div>
+    {% for job in resume.experience %}
+    <div class="entry">
+        <div class="entry-header">
+            <span>{{ job.company }}</span>
+            <span>{{ job.duration }}</span>
+        </div>
+        <div class="entry-subheader">
+            <span>{{ job.title }}</span>
+        </div>
+        <ul>
+            {% for bullet in job.bullets %}
+            <li>{{ bullet }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    {% if resume.projects %}
+    <div class="section-title">Projects</div>
+    {% for proj in resume.projects %}
+    <div class="entry">
+        <div class="entry-header">
+            <span>{{ proj.name }} {% if proj.tech_stack %}({{ proj.tech_stack | join(', ') }}){% endif %}</span>
+            <span>{% if proj.link %}{{ proj.link }}{% endif %}</span>
+        </div>
+        <div style="font-size: 10pt; margin-top: 2px;">
+            {{ proj.description }}
+        </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    {% if resume.skills %}
+    <div class="section-title">Skills</div>
+    <div class="skills-grid">
+        {% if resume.skills.technical %}
+        <div class="skills-category">
+            <strong>Technical Skills:</strong> {{ resume.skills.technical | join(', ') }}
+        </div>
+        {% endif %}
+        {% if resume.skills.soft %}
+        <div class="skills-category">
+            <strong>Soft Skills:</strong> {{ resume.skills.soft | join(', ') }}
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% if resume.education %}
+    <div class="section-title">Education</div>
+    {% for edu in resume.education %}
+    <div class="entry" style="margin-bottom: 5px;">
+        <div class="entry-header">
+            <span>{{ edu.institution }}</span>
+            <span>{{ edu.year }}</span>
+        </div>
+        <div class="entry-subheader">
+            <span>{{ edu.degree }} {% if edu.gpa %}(GPA: {{ edu.gpa }}){% endif %}</span>
+        </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+</body>
+</html>

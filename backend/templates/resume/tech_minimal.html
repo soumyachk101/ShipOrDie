@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>{{ resume.name }} - Resume</title>
+    <style>
+        @page {
+            size: letter;
+            margin: 0.6in;
+        }
+        body {
+            font-family: "Courier New", "Courier", monospace;
+            color: #1a1a1a;
+            line-height: 1.35;
+            font-size: 10pt;
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            margin-bottom: 15px;
+            border-bottom: 2px dashed #000000;
+            padding-bottom: 8px;
+        }
+        .name {
+            font-size: 22pt;
+            font-weight: bold;
+            color: {{ theme_color or '#000000' }};
+            margin: 0 0 5px 0;
+        }
+        .contact {
+            font-size: 9pt;
+            color: #444;
+        }
+        .contact a {
+            color: #000;
+            text-decoration: underline;
+        }
+        .section-title {
+            font-size: 11pt;
+            font-weight: bold;
+            color: {{ theme_color or '#000000' }};
+            margin-top: 15px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+        .section-title::before {
+            content: "> ";
+        }
+        .entry {
+            margin-bottom: 8px;
+        }
+        .entry-header {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+        }
+        .entry-subheader {
+            color: #555;
+            margin-bottom: 3px;
+        }
+        ul {
+            margin: 0;
+            padding-left: 15px;
+            list-style-type: square;
+        }
+        li {
+            margin-bottom: 2px;
+        }
+        .skill-list {
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 class="name">{{ resume.name }}</h1>
+        <div class="contact">
+            {% if resume.email %}{{ resume.email }}{% endif %}
+            {% if resume.phone %} | {{ resume.phone }}{% endif %}
+            {% if resume.location %} | {{ resume.location }}{% endif %}
+            <br>
+            {% if resume.linkedin %}linkedin: <a href="{{ resume.linkedin }}">{{ resume.linkedin }}</a>{% endif %}
+            {% if resume.github %} | github: <a href="{{ resume.github }}">{{ resume.github }}</a>{% endif %}
+        </div>
+    </div>
+
+    {% if resume.summary %}
+    <div class="section-title">SUMMARY</div>
+    <div style="text-align: justify; margin-bottom: 10px;">{{ resume.summary }}</div>
+    {% endif %}
+
+    {% if resume.experience %}
+    <div class="section-title">EXPERIENCE</div>
+    {% for job in resume.experience %}
+    <div class="entry">
+        <div class="entry-header">
+            <span>{{ job.company }}</span>
+            <span>{{ job.duration }}</span>
+        </div>
+        <div class="entry-subheader">{{ job.title }}</div>
+        <ul>
+            {% for bullet in job.bullets %}
+            <li>{{ bullet }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    {% if resume.projects %}
+    <div class="section-title">PROJECTS</div>
+    {% for proj in resume.projects %}
+    <div class="entry">
+        <div class="entry-header">
+            <span>{{ proj.name }}</span>
+            <span>{% if proj.link %}{{ proj.link }}{% endif %}</span>
+        </div>
+        <div class="entry-subheader">stack: {% if proj.tech_stack %}{{ proj.tech_stack | join(', ') }}{% endif %}</div>
+        <div style="margin-top: 2px;">{{ proj.description }}</div>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    {% if resume.skills %}
+    <div class="section-title">TECHNICAL_SKILLS</div>
+    {% if resume.skills.technical %}
+    <div class="skill-list">
+        [languages/frameworks] {{ resume.skills.technical | join(', ') }}
+    </div>
+    {% endif %}
+    {% if resume.skills.soft %}
+    <div class="skill-list">
+        [methodologies/soft] {{ resume.skills.soft | join(', ') }}
+    </div>
+    {% endif %}
+    {% endif %}
+
+    {% if resume.education %}
+    <div class="section-title">EDUCATION</div>
+    {% for edu in resume.education %}
+    <div class="entry">
+        <div class="entry-header">
+            <span>{{ edu.institution }}</span>
+            <span>{{ edu.year }}</span>
+        </div>
+        <div>{{ edu.degree }} {% if edu.gpa %}(gpa: {{ edu.gpa }}){% endif %}</div>
+    </div>
+    {% endfor %}
+    {% endif %}
+</body>
+</html>
