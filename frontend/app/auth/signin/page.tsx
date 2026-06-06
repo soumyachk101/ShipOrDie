@@ -21,7 +21,7 @@ export default function SignInPage() {
       const g = (window as any).google;
       if (g && g.accounts && g.accounts.oauth2) {
         const client = g.accounts.oauth2.initTokenClient({
-          client_id: "515760672418-76m9ashhmnfi6nar4h2jtr0vqi4subu8.apps.googleusercontent.com",
+          client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "",
           scope: "https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email",
           callback: async (tokenResponse: any) => {
             if (tokenResponse && tokenResponse.access_token) {
@@ -100,7 +100,7 @@ export default function SignInPage() {
   };
 
   const handleGitHubLogin = () => {
-    const clientId = "Ov23liNuacyFWNpM5tWw";
+    const clientId = process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID || "";
     const redirectUri = `${window.location.origin}/auth/signin`;
     const scope = "read:user user:email";
     window.location.href = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}`;
