@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, Header, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from pydantic import BaseModel, EmailStr
+import httpx
 
 from backend.db.session import get_db
 from backend.db.models import User
@@ -20,10 +21,11 @@ JWT_SECRET = "shipordiesupersecretjwtkey"
 JWT_ALGORITHM = "HS256"
 
 class LoginRequest(BaseModel):
-    email: EmailStr
+    email: EmailStr | None = None
     name: str | None = None
     avatar_url: str | None = None
     provider: str  # 'google' | 'github' | 'demo'
+    token: str | None = None
 
 def create_jwt_token(user_id: str) -> str:
     payload = {
@@ -82,19 +84,54 @@ async def get_current_user(
 @router.post("/login")
 async def login(req: LoginRequest, db: AsyncSession = Depends(get_db)):
     """Logs in an OAuth authenticated user or registers them if new."""
-    logger.info(f"Login request for email {req.email} via {req.provider}")
+    email = req.email
+    name = req.name
+    avatar_url = req.avatar_url
+
+    if req.provider == "google" and req.token:
+        logger.info("Verifying Google access token...")
+        try:
+            async with httpx.AsyncClient() as client:
+                res = await client.get(
+                    "https://www.googleapis.com/oauth2/v3/userinfo",
+                    headers={"Authorization": f"Bearer {req.token}"}
+                )
+                if res.status_code != 200:
+                    logger.error(f"Google userinfo response error: {res.text}")
+                    raise HTTPException(
+                        status_code=status.HTTP_401_UNAUTHORIZED,
+                        detail="Invalid Google access token."
+                    )
+                google_user = res.json()
+                email = google_user.get("email")
+                name = google_user.get("name")
+                avatar_url = google_user.get("picture")
+        except Exception as e:
+            logger.error(f"Google token verification failed: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Google token verification failed."
+            )
+
+    if not email:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email is required for authentication."
+        )
+
+    logger.info(f"Login request for email {email} via {req.provider}")
     
-    stmt = select(User).where(User.email == req.email)
+    stmt = select(User).where(User.email == email)
     res = await db.execute(stmt)
     user = res.scalar_one_or_none()
     
     if not user:
-        logger.info(f"User {req.email} not found. Registering new profile.")
+        logger.info(f"User {email} not found. Registering new profile.")
         # Free tier gets 3 idea credits and 1 resume credit
         user = User(
-            email=req.email,
-            name=req.name,
-            avatar_url=req.avatar_url,
+            email=email,
+            name=name,
+            avatar_url=avatar_url,
             provider=req.provider,
             tier="free",
             credits_remaining=3,

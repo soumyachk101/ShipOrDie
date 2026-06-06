@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAppStore } from "../../../store/useAppStore";
 import { api } from "../../../lib/api";
 import { Zap, Sparkles, LogIn } from "lucide-react";
@@ -9,6 +9,50 @@ export default function SignInPage() {
   const { setAuth } = useAppStore();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [googleClient, setGoogleClient] = useState<any>(null);
+
+  useEffect(() => {
+    // Dynamic Google OAuth Script Loading
+    const script = document.createElement("script");
+    script.src = "https://accounts.google.com/gsi/client";
+    script.async = true;
+    script.defer = true;
+    script.onload = () => {
+      const g = (window as any).google;
+      if (g && g.accounts && g.accounts.oauth2) {
+        const client = g.accounts.oauth2.initTokenClient({
+          client_id: "515760672418-76m9ashhmnfi6nar4h2jtr0vqi4subu8.apps.googleusercontent.com",
+          scope: "https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email",
+          callback: async (tokenResponse: any) => {
+            if (tokenResponse && tokenResponse.access_token) {
+              setLoading(true);
+              setError("");
+              try {
+                const res = await api.post("/api/auth/login", {
+                  provider: "google",
+                  token: tokenResponse.access_token
+                });
+                setAuth(res.token, res.user);
+                window.location.href = "/dashboard";
+              } catch (err) {
+                setError("Google login verification failed.");
+              } finally {
+                setLoading(false);
+              }
+            }
+          },
+        });
+        setGoogleClient(client);
+      }
+    };
+    document.body.appendChild(script);
+    return () => {
+      // Clean up script on unmount
+      if (document.body.contains(script)) {
+        document.body.removeChild(script);
+      }
+    };
+  }, [setAuth]);
 
   const handleDemoLogin = async () => {
     setLoading(true);
@@ -81,9 +125,15 @@ export default function SignInPage() {
           
           {/* Google Login */}
           <button 
-            onClick={() => handleOAuthSimulate("google")}
+            onClick={() => {
+              if (googleClient) {
+                googleClient.requestAccessToken();
+              } else {
+                handleOAuthSimulate("google");
+              }
+            }}
             disabled={loading}
-            className="w-full flex items-center justify-center gap-3 rounded-2xl border border-white/5 bg-white/5 hover:bg-white/10 py-3.5 px-4 font-semibold text-white transition-all disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-3 rounded-2xl border border-white/5 bg-white/5 hover:bg-white/10 py-3.5 px-4 font-semibold text-white transition-all disabled:opacity-50 cursor-pointer"
           >
             {/* Google G SVG */}
             <svg className="h-5 w-5" viewBox="0 0 24 24">
