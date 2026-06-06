@@ -11,6 +11,7 @@ import httpx
 from backend.db.session import get_db
 from backend.db.models import User
 from backend.db.schemas import UserResponse, UserCreate
+from backend.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -111,6 +112,78 @@ async def login(req: LoginRequest, db: AsyncSession = Depends(get_db)):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Google token verification failed."
+            )
+
+    elif req.provider == "github" and req.token:
+        logger.info("Exchanging GitHub auth code for access token...")
+        try:
+            async with httpx.AsyncClient() as client:
+                res = await client.post(
+                    "https://github.com/login/oauth/access_token",
+                    json={
+                        "client_id": settings.GITHUB_CLIENT_ID,
+                        "client_secret": settings.GITHUB_CLIENT_SECRET,
+                        "code": req.token
+                    },
+                    headers={"Accept": "application/json"}
+                )
+                if res.status_code != 200:
+                    logger.error(f"GitHub token exchange error: {res.text}")
+                    raise HTTPException(
+                        status_code=status.HTTP_401_UNAUTHORIZED,
+                        detail="Failed to exchange GitHub authorization code."
+                    )
+                exchange_data = res.json()
+                access_token = exchange_data.get("access_token")
+                if not access_token:
+                    logger.error(f"GitHub token exchange returned no access token: {exchange_data}")
+                    raise HTTPException(
+                        status_code=status.HTTP_401_UNAUTHORIZED,
+                        detail="Failed to retrieve GitHub access token."
+                    )
+                
+                # Fetch user profile
+                user_res = await client.get(
+                    "https://api.github.com/user",
+                    headers={
+                        "Authorization": f"Bearer {access_token}",
+                        "User-Agent": "ShipOrDie-API"
+                    }
+                )
+                if user_res.status_code != 200:
+                    logger.error(f"GitHub user profile error: {user_res.text}")
+                    raise HTTPException(
+                        status_code=status.HTTP_401_UNAUTHORIZED,
+                        detail="Failed to retrieve GitHub user profile."
+                    )
+                github_user = user_res.json()
+                email = github_user.get("email")
+                name = github_user.get("name") or github_user.get("login")
+                avatar_url = github_user.get("avatar_url")
+                
+                # Fetch email if private
+                if not email:
+                    email_res = await client.get(
+                        "https://api.github.com/user/emails",
+                        headers={
+                            "Authorization": f"Bearer {access_token}",
+                            "User-Agent": "ShipOrDie-API"
+                        }
+                    )
+                    if email_res.status_code == 200:
+                        emails = email_res.json()
+                        primary_email = next(
+                            (e.get("email") for e in emails if e.get("primary") and e.get("verified")),
+                            None
+                        )
+                        if not primary_email and emails:
+                            primary_email = emails[0].get("email")
+                        email = primary_email
+        except Exception as e:
+            logger.error(f"GitHub authentication failed: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="GitHub authentication failed."
             )
 
     if not email:

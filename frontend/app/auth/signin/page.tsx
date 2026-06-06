@@ -12,7 +12,7 @@ export default function SignInPage() {
   const [googleClient, setGoogleClient] = useState<any>(null);
 
   useEffect(() => {
-    // Dynamic Google OAuth Script Loading
+    // 1. Dynamic Google OAuth Script Loading
     const script = document.createElement("script");
     script.src = "https://accounts.google.com/gsi/client";
     script.async = true;
@@ -46,6 +46,30 @@ export default function SignInPage() {
       }
     };
     document.body.appendChild(script);
+
+    // 2. GitHub Auth Callback Handler
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get("code");
+    if (code) {
+      setLoading(true);
+      setError("");
+      
+      // Clean query parameters from URL so they don't stay in address bar
+      window.history.replaceState({}, document.title, window.location.pathname);
+      
+      api.post("/api/auth/login", {
+        provider: "github",
+        token: code
+      }).then((res) => {
+        setAuth(res.token, res.user);
+        window.location.href = "/dashboard";
+      }).catch(() => {
+        setError("GitHub login verification failed.");
+      }).finally(() => {
+        setLoading(false);
+      });
+    }
+
     return () => {
       // Clean up script on unmount
       if (document.body.contains(script)) {
@@ -73,6 +97,13 @@ export default function SignInPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleGitHubLogin = () => {
+    const clientId = "Ov23liNuacyFWNpM5tWw";
+    const redirectUri = `${window.location.origin}/auth/signin`;
+    const scope = "read:user user:email";
+    window.location.href = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}`;
   };
 
   const handleOAuthSimulate = async (provider: string) => {
@@ -147,9 +178,9 @@ export default function SignInPage() {
 
           {/* GitHub Login */}
           <button 
-            onClick={() => handleOAuthSimulate("github")}
+            onClick={handleGitHubLogin}
             disabled={loading}
-            className="w-full flex items-center justify-center gap-3 rounded-2xl border border-white/5 bg-white/5 hover:bg-white/10 py-3.5 px-4 font-semibold text-white transition-all disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-3 rounded-2xl border border-white/5 bg-white/5 hover:bg-white/10 py-3.5 px-4 font-semibold text-white transition-all disabled:opacity-50 cursor-pointer"
           >
             <svg className="h-5 w-5 text-white fill-current" viewBox="0 0 24 24">
               <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.462-1.11-1.462-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.579.688.481C19.137 20.164 22 16.418 22 12c0-5.523-4.477-10-10-10z" />

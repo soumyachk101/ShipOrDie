@@ -34,6 +34,10 @@ class Settings(BaseSettings):
     RAZORPAY_KEY_SECRET: str = ""
     RAZORPAY_WEBHOOK_SECRET: str = "rzp_webhook_secret_placeholder"
 
+    # GitHub OAuth Settings
+    GITHUB_CLIENT_ID: str = ""
+    GITHUB_CLIENT_SECRET: str = ""
+
     class Config:
         env_file = ".env"
         extra = "ignore"
