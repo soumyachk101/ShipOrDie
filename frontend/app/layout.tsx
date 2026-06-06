@@ -74,9 +74,7 @@ export default function RootLayout({
             {/* Logo */}
             <div className="flex items-center gap-6">
               <Link href="/" className="flex items-center gap-2.5 font-heading font-extrabold text-lg tracking-[-0.04em] text-white">
-                <div className="brand-mark">
-                  <Zap className="h-4 w-4 text-[#10120d]" />
-                </div>
+                <img src="/logo_mark.png" alt="Logo" className="h-7 w-auto object-contain" />
                 <span>ShipOr<span className="text-[#d8ff69]">Die</span></span>
               </Link>
               

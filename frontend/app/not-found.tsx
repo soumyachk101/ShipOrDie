@@ -44,9 +44,7 @@ export default function NotFound() {
 
         {/* Brand */}
         <div className="mt-12 flex items-center justify-center gap-2 text-zinc-700 text-xs">
-          <div className="brand-mark !h-5 !w-5">
-            <Zap className="!h-2.5 !w-2.5 text-[#10120d]" />
-          </div>
+          <img src="/logo_mark.png" alt="Logo" className="h-5 w-auto object-contain" />
           <span className="font-bold">ShipOr<span className="text-[#d8ff69]">Die</span></span>
         </div>
       </div>
