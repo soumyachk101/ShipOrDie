@@ -1,11 +1,13 @@
 "use client";
 
 import "./globals.css";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useAppStore } from "../store/useAppStore";
 import { api } from "../lib/api";
-import { Zap, CreditCard, Sparkles, BookOpen, Layers, LogOut, CheckCircle, X } from "lucide-react";
+import { Zap, CreditCard, Sparkles, BookOpen, Layers, LogOut, CheckCircle, X, ArrowRight } from "lucide-react";
+
+const subscribeToHydration = () => () => {};
 
 export default function RootLayout({
   children,
@@ -21,13 +23,8 @@ export default function RootLayout({
     updateUserCredits 
   } = useAppStore();
 
-  const [activeTab, setActiveTab] = useState("ideas");
   const [loading, setLoading] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useSyncExternalStore(subscribeToHydration, () => true, () => false);
 
   // Poll billing status on load
   useEffect(() => {
@@ -55,7 +52,7 @@ export default function RootLayout({
       setUpgradeModal(false);
       alert("Successfully upgraded to PRO tier (Demo Mode)!");
       window.location.reload();
-    } catch (e) {
+    } catch {
       alert("Billing simulation failed.");
     } finally {
       setLoading(false);
@@ -68,31 +65,37 @@ export default function RootLayout({
         <title>ShipOrDie — Launch SaaS & ATS Resumes in Minutes</title>
         <meta name="description" content="AI Idea Engine validates Micro-SaaS ideas. AI Resume Builder generates ATS-optimized, undetectable resumes." />
       </head>
-      <body className="min-h-full flex flex-col bg-black text-white font-sans antialiased selection:bg-indigo-500/30 selection:text-indigo-200">
+      <body className="min-h-full flex flex-col bg-[#070b14] text-white font-sans antialiased selection:bg-cyan-400/20 selection:text-cyan-100">
         
         {/* Navigation Bar */}
-        <header className="sticky top-0 z-50 w-full border-b border-white/5 bg-black/60 backdrop-blur-md">
-          <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+        <header className="premium-nav">
+          <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
             
             {/* Logo */}
             <div className="flex items-center gap-6">
-              <Link href="/" className="flex items-center gap-2 font-heading font-extrabold text-xl tracking-tight text-white">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-500 to-violet-600 shadow-lg shadow-indigo-500/20">
-                  <Zap className="h-5 w-5 text-white" />
+              <Link href="/" className="flex items-center gap-2.5 font-heading font-extrabold text-lg tracking-[-0.04em] text-white">
+                <div className="brand-mark">
+                  <Zap className="h-4 w-4 text-[#10120d]" />
                 </div>
-                <span>ShipOr<span className="text-indigo-400">Die</span></span>
+                <span>ShipOr<span className="text-[#d8ff69]">Die</span></span>
               </Link>
               
               {mounted && token && (
                 <nav className="hidden md:flex items-center gap-1">
-                  <Link href="/dashboard" className="px-3 py-2 text-sm font-medium text-zinc-300 hover:text-white transition-colors">
+                  <Link href="/dashboard" className="premium-nav-link">
                     Dashboard
                   </Link>
-                  <Link href="/dashboard#ideas-section" className="px-3 py-2 text-sm font-medium text-zinc-300 hover:text-white transition-colors">
-                    Idea Engine
+                  <Link href="/dashboard/ideas" className="premium-nav-link">
+                    Ideas
                   </Link>
-                  <Link href="/dashboard#resume-section" className="px-3 py-2 text-sm font-medium text-zinc-300 hover:text-white transition-colors">
-                    Resume Builder
+                  <Link href="/dashboard/resume" className="premium-nav-link">
+                    Resumes
+                  </Link>
+                  <Link href="/dashboard/vault" className="premium-nav-link">
+                    Vault
+                  </Link>
+                  <Link href="/dashboard/billing" className="premium-nav-link">
+                    Billing
                   </Link>
                 </nav>
               )}
@@ -156,9 +159,9 @@ export default function RootLayout({
               ) : (
                 <Link 
                   href="/auth/signin" 
-                  className="rounded-xl bg-indigo-500 hover:bg-indigo-600 py-2 px-4 text-sm font-semibold text-white shadow-lg shadow-indigo-500/20 transition-all"
+                  className="premium-primary !min-h-9 !px-4 !py-0"
                 >
-                  Sign In
+                  Sign In <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
               )}
             </div>
@@ -172,7 +175,7 @@ export default function RootLayout({
         </main>
 
         {/* Global Footer */}
-        <footer className="border-t border-white/5 bg-zinc-950 py-8 text-center text-xs text-zinc-600">
+        <footer className="border-t border-white/[0.06] bg-[#060a12] py-8 text-center text-xs text-slate-600">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <p>© {new Date().getFullYear()} ShipOrDie. All rights reserved.</p>
             <p className="mt-1 text-zinc-700">Created by Soumya Chakraborty | Multi-Agent Niche SaaS builder.</p>

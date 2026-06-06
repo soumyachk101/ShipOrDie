@@ -190,6 +190,10 @@ export const api = {
       loggerWarning(url, e);
       return mockDeleteResponse(url);
     }
+  },
+
+  getBaseUrl(): string {
+    return BACKEND_URL;
   }
 };
 

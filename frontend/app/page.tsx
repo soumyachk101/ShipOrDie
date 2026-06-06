@@ -2,235 +2,169 @@
 
 import { useSyncExternalStore } from "react";
 import Link from "next/link";
-import { Sparkles, Check, ArrowRight, ShieldCheck, Cpu } from "lucide-react";
+import {
+  ArrowRight, ArrowUpRight, Check, FileText, MoveRight,
+  Radar, ScanSearch, Sparkles, TrendingUp,
+} from "lucide-react";
 import { useAppStore } from "../store/useAppStore";
 
 const subscribeToHydration = () => () => {};
 
+const opportunities = [
+  { score: 92, name: "Back-office automation for boutique agencies", source: "Reddit · 184 signals", movement: "+24%" },
+  { score: 88, name: "Incident handoff for small engineering teams", source: "Hacker News · 96 signals", movement: "+18%" },
+  { score: 84, name: "Client reporting for fractional marketers", source: "Product Hunt · 71 signals", movement: "+13%" },
+];
+
 export default function LandingPage() {
   const { token } = useAppStore();
   const isHydrated = useSyncExternalStore(subscribeToHydration, () => true, () => false);
-  const isAuthenticated = isHydrated && Boolean(token);
+  const appHref = isHydrated && token ? "/dashboard" : "/auth/signin";
 
   return (
-    <div className="relative flex flex-col items-center justify-center min-h-screen overflow-hidden bg-black">
-      
-      {/* Background glow effects */}
-      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-500/10 blur-[120px]" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-violet-600/10 blur-[120px]" />
+    <div className="editorial-page">
+      <section className="editorial-hero">
+        <div className="editorial-container">
+          <div className="editorial-kicker-row">
+            <span>ShipOrDie / Product intelligence</span>
+            <span className="hidden sm:block">Research. Decide. Ship.</span>
+          </div>
 
-      {/* Hero Section */}
-      <section className="relative z-10 mx-auto max-w-7xl px-4 pt-24 pb-16 text-center sm:px-6 lg:px-8">
-        
-        {/* Launch tag */}
-        <div className="inline-flex items-center gap-1.5 rounded-full border border-indigo-500/30 bg-indigo-500/5 px-4 py-1.5 text-xs font-semibold text-indigo-300">
-          <Sparkles className="h-3.5 w-3.5" />
-          <span>v2.0 — Resume Humanizer Engine Live</span>
-        </div>
-
-        <h1 className="mt-8 font-heading font-extrabold text-4xl tracking-tight sm:text-6xl text-white">
-          Ship SaaS Ideas.<br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-violet-400 to-indigo-300">
-            Beat AI Filters.
-          </span>
-        </h1>
-
-        <p className="mx-auto mt-6 max-w-2xl text-lg text-zinc-400">
-          ShipOrDie is a developer tool suite containing an AI-agent Idea Engine that searches market signals for SaaS opportunities, and an undetectable ATS-optimized Resume Builder.
-        </p>
-
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-          <Link
-            href={isAuthenticated ? "/dashboard" : "/auth/signin"}
-            className="group flex items-center gap-2 rounded-2xl bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-600 hover:to-violet-700 py-3.5 px-6 font-bold text-white shadow-xl shadow-indigo-500/20 transition-all hover:scale-105"
-          >
-            {isAuthenticated ? "Go to Dashboard" : "Build Your First Idea"}
-            <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-          </Link>
-          <a
-            href="#how-it-works"
-            className="rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 py-3.5 px-6 font-bold text-zinc-200 transition-colors"
-          >
-            How it works
-          </a>
-        </div>
-      </section>
-
-      {/* Showcase / Product Feature Selection */}
-      <section className="relative z-10 w-full max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8">
-        <div className="grid md:grid-cols-2 gap-8">
-          
-          {/* Module 1: Idea Engine */}
-          <div className="glass-panel rounded-3xl p-8 border border-white/5 hover:border-indigo-500/30 transition-all flex flex-col justify-between">
+          <div className="grid gap-14 border-t border-white/15 py-16 lg:grid-cols-[1.05fr_.95fr] lg:py-24">
             <div>
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-500/10 text-indigo-400 mb-6">
-                <Cpu className="h-6 w-6" />
-              </div>
-              <h3 className="font-heading font-extrabold text-2xl text-white">Module 1: AI Idea Engine</h3>
-              <p className="mt-3 text-zinc-400 text-sm">
-                Aggregates signals from Reddit pain points, ProductHunt launches, and Ask HN threads. Synthesizes opportunities into complete business packs with competitive analyses and pricing strategies.
+              <p className="editorial-label">For independent builders and ambitious operators</p>
+              <h1 className="editorial-hero-title">
+                Good products start with
+                <em> better evidence.</em>
+              </h1>
+              <p className="editorial-hero-copy">
+                ShipOrDie turns scattered market conversations into useful product direction, then helps you present your work with equal clarity.
               </p>
-              
-              <ul className="mt-6 space-y-2.5 text-zinc-300 text-xs">
-                <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-indigo-400" />
-                  <span>Real-time Reddit & HN signal scraper</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-indigo-400" />
-                  <span>ChromaDB semantic opportunity clustering</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-indigo-400" />
-                  <span>Comprehensive USD & INR pricing strategies</span>
-                </li>
-              </ul>
+              <div className="mt-9 flex flex-wrap items-center gap-4">
+                <Link href={appHref} className="editorial-primary">Enter workspace <ArrowRight className="h-4 w-4" /></Link>
+                <a href="#products" className="editorial-text-link">See how it works <MoveRight className="h-4 w-4" /></a>
+              </div>
             </div>
-            
-            <div className="mt-8 pt-6 border-t border-white/5">
-              <Link 
-                href={isAuthenticated ? "/dashboard" : "/auth/signin"}
-                className="inline-flex items-center gap-1.5 text-sm font-bold text-indigo-400 hover:text-indigo-300"
-              >
-                Launch Idea Pipeline <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
-          </div>
 
-          {/* Module 2: Resume Builder */}
-          <div className="glass-panel rounded-3xl p-8 border border-white/5 hover:border-violet-500/30 transition-all flex flex-col justify-between">
+            <ResearchBrief />
+          </div>
+        </div>
+      </section>
+
+      <section className="editorial-proof">
+        <div className="editorial-container grid gap-0 sm:grid-cols-3">
+          <Proof value="12,840" label="public market signals reviewed" />
+          <Proof value="47" label="qualified opportunities surfaced" />
+          <Proof value="90+" label="target ATS compatibility score" />
+        </div>
+      </section>
+
+      <section id="products" className="editorial-section">
+        <div className="editorial-container">
+          <div className="editorial-section-intro">
+            <span className="editorial-index">01</span>
             <div>
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-500/10 text-violet-400 mb-6">
-                <ShieldCheck className="h-6 w-6" />
-              </div>
-              <h3 className="font-heading font-extrabold text-2xl text-white">Module 2: Undetectable Resume Builder</h3>
-              <p className="mt-3 text-zinc-400 text-sm">
-                Rewrites details through a multi-pass pipeline. Randomizes vocabulary and syntax flow to ensure resumes score below 10% on AI content checkers while weaving key job keywords.
-              </p>
-              
-              <ul className="mt-6 space-y-2.5 text-zinc-300 text-xs">
-                <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-violet-400" />
-                  <span>Sentence variance (burstiness) humanizer</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-violet-400" />
-                  <span>Local perplexity AI score generator</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-violet-400" />
-                  <span>Keyword injections for ATS filters</span>
-                </li>
-              </ul>
-            </div>
-            
-            <div className="mt-8 pt-6 border-t border-white/5">
-              <Link 
-                href={isAuthenticated ? "/dashboard" : "/auth/signin"}
-                className="inline-flex items-center gap-1.5 text-sm font-bold text-violet-400 hover:text-violet-300"
-              >
-                Create Tailored Resume <ArrowRight className="h-4 w-4" />
-              </Link>
+              <p className="editorial-label">A working system, not another AI wrapper</p>
+              <h2>Two focused tools for making a stronger next move.</h2>
             </div>
           </div>
 
-        </div>
-      </section>
-
-      {/* Visual Workflow Section */}
-      <section id="how-it-works" className="relative z-10 w-full max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8 border-t border-white/5">
-        <h2 className="text-center font-heading font-bold text-3xl text-white">The ShipOrDie Architecture</h2>
-        <p className="text-center text-zinc-500 text-sm mt-2">How our agent pipelines run in the background</p>
-
-        <div className="grid sm:grid-cols-3 gap-6 mt-12">
-          <div className="glass-panel p-6 rounded-2xl">
-            <span className="text-zinc-600 font-extrabold text-3xl">01</span>
-            <h4 className="font-bold text-lg text-white mt-2">Scrape & Cluster</h4>
-            <p className="text-zinc-400 text-xs mt-1">
-              Agents parse Reddit, HN, and ProductHunt for customer pain points and cluster them using ChromaDB embeddings.
-            </p>
-          </div>
-          <div className="glass-panel p-6 rounded-2xl">
-            <span className="text-zinc-600 font-extrabold text-3xl">02</span>
-            <h4 className="font-bold text-lg text-white mt-2">Humanize & Check</h4>
-            <p className="text-zinc-400 text-xs mt-1">
-              For resumes, Pass 2 randomizes syntax while Pass 3 runs unigram lexical entropy check to guarantee &lt;10% AI scores.
-            </p>
-          </div>
-          <div className="glass-panel p-6 rounded-2xl">
-            <span className="text-zinc-600 font-extrabold text-3xl">03</span>
-            <h4 className="font-bold text-lg text-white mt-2">Export & Tailor</h4>
-            <p className="text-zinc-400 text-xs mt-1">
-              Download PDFs instantly, export docx Word sheets, or link a job description to tailor resumes on the fly.
-            </p>
+          <div className="product-ledger">
+            <ProductRow
+              number="A"
+              icon={<ScanSearch />}
+              title="Opportunity research"
+              copy="Find recurring customer pain across Reddit, Hacker News, and Product Hunt. Get a ranked business brief instead of a list of generic ideas."
+              notes={["Source-linked evidence", "Competition and demand score", "Pricing and distribution plan"]}
+              href={appHref}
+            />
+            <ProductRow
+              number="B"
+              icon={<FileText />}
+              title="Resume studio"
+              copy="Build role-specific resumes with measured impact, restrained design, and a live preview that stays friendly to applicant tracking systems."
+              notes={["Structured content editor", "Job-description tailoring", "PDF and DOCX output"]}
+              href={appHref}
+            />
           </div>
         </div>
       </section>
 
-      {/* Pricing Section */}
-      <section className="relative z-10 w-full max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8 border-t border-white/5">
-        <h2 className="text-center font-heading font-bold text-3xl text-white">Simple, Transparent Pricing</h2>
-        <div className="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto mt-12">
-          
-          {/* Free Tier */}
-          <div className="glass-panel p-8 rounded-3xl border border-white/5">
-            <h4 className="text-lg font-bold text-zinc-400">Starter Plan</h4>
-            <div className="mt-2 flex items-baseline gap-1">
-              <span className="text-4xl font-extrabold text-white">₹0</span>
+      <section className="editorial-section editorial-section-paper">
+        <div className="editorial-container">
+          <div className="grid gap-12 lg:grid-cols-[.72fr_1.28fr]">
+            <div>
+              <span className="editorial-index text-stone-400">02</span>
+              <h2 className="paper-heading">Designed to reduce indecision.</h2>
+              <p className="mt-5 max-w-sm text-sm leading-7 text-stone-600">The workflow is intentionally short. Each step should leave you with something concrete enough to act on.</p>
             </div>
-            <p className="text-zinc-500 text-xs mt-2">Get started validation testing SaaS idea models.</p>
-            
-            <ul className="mt-6 space-y-3 text-sm text-zinc-300">
-              <li className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-indigo-400" />
-                <span>3 Idea pipeline runs / month</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-indigo-400" />
-                <span>1 Resume generation / month</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-indigo-400" />
-                <span>Basic PDF exports</span>
-              </li>
-            </ul>
+            <div className="process-list">
+              <Process number="01" title="Collect the evidence" copy="We find repeated problems in places where people already complain, compare, and buy." />
+              <Process number="02" title="Make the trade-offs visible" copy="Each opportunity is scored against demand, competition, complexity, and likely distribution." />
+              <Process number="03" title="Leave with an artifact" copy="Export a product brief or a tailored resume that is ready for the next conversation." />
+            </div>
           </div>
-
-          {/* Pro Tier */}
-          <div className="glass-panel p-8 rounded-3xl border border-indigo-500/30 relative">
-            <div className="absolute top-4 right-4 bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 text-[10px] font-bold uppercase tracking-wider py-1 px-2.5 rounded-full">
-              Recommended
-            </div>
-            <h4 className="text-lg font-bold text-indigo-400">Pro Plan</h4>
-            <div className="mt-2 flex items-baseline gap-1">
-              <span className="text-4xl font-extrabold text-white">₹499</span>
-              <span className="text-zinc-500 text-xs">/ month</span>
-            </div>
-            <p className="text-zinc-500 text-xs mt-2">For founders launching projects and job seeking builders.</p>
-            
-            <ul className="mt-6 space-y-3 text-sm text-zinc-300">
-              <li className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-indigo-400" />
-                <span><strong>Unlimited</strong> Idea generations</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-indigo-400" />
-                <span><strong>10 Resumes / Month</strong> credits</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-indigo-400" />
-                <span>Word DOCX & PDF exports</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-indigo-400" />
-                <span>Resume version history diffs</span>
-              </li>
-            </ul>
-          </div>
-
         </div>
       </section>
 
+      <section className="editorial-closing">
+        <div className="editorial-container">
+          <p className="editorial-label">Your next useful decision</p>
+          <div className="mt-5 flex flex-col justify-between gap-8 border-t border-white/15 pt-8 lg:flex-row lg:items-end">
+            <h2>Less noise.<br /><em>More signal.</em></h2>
+            <div className="max-w-sm">
+              <p className="text-sm leading-7 text-stone-400">Start with the evidence you have. ShipOrDie will help make it useful.</p>
+              <Link href={appHref} className="editorial-primary mt-6">Open ShipOrDie <ArrowUpRight className="h-4 w-4" /></Link>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
+}
+
+function ResearchBrief() {
+  return (
+    <div className="research-brief">
+      <div className="brief-header">
+        <div><span>Research brief</span><strong>Emerging opportunities / Week 23</strong></div>
+        <Radar className="h-5 w-5" />
+      </div>
+      <div className="brief-meta">
+        <span><b>12,840</b> signals reviewed</span>
+        <span><b>03</b> sources</span>
+        <span><b>47</b> qualified</span>
+      </div>
+      <div className="brief-table">
+        <div className="brief-table-heading"><span>Score / opportunity</span><span>Movement</span></div>
+        {opportunities.map((item) => (
+          <div key={item.name} className="brief-row">
+            <span className="brief-score">{item.score}</span>
+            <div><strong>{item.name}</strong><small>{item.source}</small></div>
+            <span className="brief-movement">{item.movement}</span>
+          </div>
+        ))}
+      </div>
+      <div className="brief-note"><Sparkles className="h-4 w-4" /><span><b>Analyst note:</b> Agency operations shows consistent willingness to pay and a reachable audience.</span></div>
+    </div>
+  );
+}
+
+function Proof({ value, label }: { value: string; label: string }) {
+  return <div className="editorial-proof-item"><strong>{value}</strong><span>{label}</span></div>;
+}
+
+function ProductRow({ number, icon, title, copy, notes, href }: { number: string; icon: React.ReactNode; title: string; copy: string; notes: string[]; href: string }) {
+  return (
+    <article className="product-ledger-row">
+      <div className="product-ledger-mark"><span>{number}</span>{icon}</div>
+      <div><h3>{title}</h3><p>{copy}</p></div>
+      <ul>{notes.map((note) => <li key={note}><Check className="h-3.5 w-3.5" />{note}</li>)}</ul>
+      <Link href={href} aria-label={`Open ${title}`}><ArrowUpRight className="h-5 w-5" /></Link>
+    </article>
+  );
+}
+
+function Process({ number, title, copy }: { number: string; title: string; copy: string }) {
+  return <div className="process-row"><span>{number}</span><div><h3>{title}</h3><p>{copy}</p></div><TrendingUp className="h-4 w-4" /></div>;
 }

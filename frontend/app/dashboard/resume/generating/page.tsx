@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { api } from "@/lib/api";
 import { useAppStore } from "@/store/useAppStore";
@@ -14,6 +14,10 @@ const RESUME_STEPS = [
 ];
 
 export default function ResumeGeneratingPage() {
+  return <Suspense fallback={<div className="flex min-h-screen items-center justify-center bg-black"><Loader2 className="h-7 w-7 animate-spin text-cyan-300" /></div>}><ResumeGeneratingContent /></Suspense>;
+}
+
+function ResumeGeneratingContent() {
   const searchParams = useSearchParams();
   const jobId = searchParams.get("job_id");
   const { setActiveResumeJobId } = useAppStore();

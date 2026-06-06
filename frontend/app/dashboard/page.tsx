@@ -1,38 +1,62 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { api } from "@/lib/api";
-import { useAppStore, ResumeInput } from "@/store/useAppStore";
+import { useAppStore } from "@/store/useAppStore";
 import { 
-  Zap, Sparkles, BookOpen, Layers, Bookmark, 
-  Trash2, Download, RefreshCw, PlusCircle, ArrowRight,
-  TrendingUp, FileText, BadgeAlert, CheckCircle, HelpCircle
+  Sparkles, Bookmark, Trash2, ArrowRight,
+  TrendingUp, FileText, CheckCircle
 } from "lucide-react";
+
+const subscribeToHydration = () => () => {};
+
+interface IdeaRecord {
+  id: string;
+  niche_score: number;
+  target_user: string;
+  problem: string;
+  solution: string;
+  stack: string[];
+  is_saved: boolean;
+  build_time_weeks: number;
+}
+
+interface ResumeRecord {
+  id: string;
+  title: string;
+  template: string;
+  ai_score: number;
+  ats_score: number;
+  final_resume?: { summary?: string };
+}
+
+function getErrorDetail(error: unknown, fallback: string) {
+  if (typeof error === "object" && error !== null && "response" in error) {
+    return (error as { response?: { data?: { detail?: string } } }).response?.data?.detail || fallback;
+  }
+  return fallback;
+}
 
 export default function DashboardPage() {
   const { token, user, setUpgradeModal, updateUserCredits } = useAppStore();
 
   const [activeTab, setActiveTab] = useState<"ideas" | "vault" | "resumes">("ideas");
-  const [ideas, setIdeas] = useState<any[]>([]);
-  const [resumes, setResumes] = useState<any[]>([]);
+  const [ideas, setIdeas] = useState<IdeaRecord[]>([]);
+  const [resumes, setResumes] = useState<ResumeRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [tailorModalOpen, setTailorModalOpen] = useState(false);
   const [selectedResumeId, setSelectedResumeId] = useState<string | null>(null);
   const [jobDescription, setJobDescription] = useState("");
   const [processingTailor, setProcessingTailor] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useSyncExternalStore(subscribeToHydration, () => true, () => false);
 
   // Authentication check
   useEffect(() => {
     if (mounted && !token) {
       window.location.href = "/auth/signin";
     }
-  }, [token]);
+  }, [mounted, token]);
 
   // Load dashboard data
   const loadData = async () => {
@@ -58,7 +82,8 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (token) {
-      loadData();
+      const timeout = window.setTimeout(() => void loadData(), 0);
+      return () => window.clearTimeout(timeout);
     }
   }, [token]);
 
@@ -67,7 +92,7 @@ export default function DashboardPage() {
       try {
         await api.delete(`/api/resume/${id}`);
         setResumes(resumes.filter(r => r.id !== id));
-      } catch (e) {
+      } catch {
         alert("Failed to delete resume.");
       }
     }
@@ -82,7 +107,7 @@ export default function DashboardPage() {
         await api.post(`/api/ideas/${ideaId}/save`);
         setIdeas(ideas.map(i => i.id === ideaId ? { ...i, is_saved: true } : i));
       }
-    } catch (e) {
+    } catch {
       alert("Failed to update vault bookmark.");
     }
   };
@@ -104,22 +129,11 @@ export default function DashboardPage() {
       useAppStore.getState().setActiveResumeJobId(res.id);
       // Route to loader screen
       window.location.href = `/dashboard/resume/generating?job_id=${res.id}`;
-    } catch (e: any) {
-      alert(e.response?.data?.detail || "Failed to start tailoring.");
+    } catch (error: unknown) {
+      alert(getErrorDetail(error, "Failed to start tailoring."));
     } finally {
       setProcessingTailor(false);
       setTailorModalOpen(false);
-    }
-  };
-
-  const handleDemoUpgrade = async () => {
-    try {
-      const res = await api.post("/api/billing/upgrade-demo");
-      updateUserCredits(res.user.credits_remaining, res.user.resume_credits_remaining);
-      alert("Demo account upgraded to Pro! Enjoy unlimited generation.");
-      loadData();
-    } catch (e) {
-      alert("Demo upgrade failed.");
     }
   };
 
@@ -133,12 +147,27 @@ export default function DashboardPage() {
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mb-9 flex flex-col justify-between gap-5 border-b border-white/[0.07] pb-8 sm:flex-row sm:items-end">
+        <div>
+          <p className="editorial-label">Workspace / overview</p>
+          <h1 className="mt-4 text-3xl font-extrabold tracking-[-0.045em] text-white sm:text-4xl">
+            Welcome back, {user.name?.split(" ")[0] || "Builder"}.
+          </h1>
+          <p className="mt-2 max-w-xl text-sm leading-6 text-slate-500">
+            Validate opportunities, manage your research, and create tailored resumes from one focused workspace.
+          </p>
+        </div>
+        <div className="flex gap-3">
+          <Link href="/dashboard/generate" className="premium-secondary">New opportunity</Link>
+          <Link href="/dashboard/resume/new" className="premium-primary">Build resume <ArrowRight className="h-4 w-4" /></Link>
+        </div>
+      </div>
       
       {/* Top Banner with Quick Stats */}
-      <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+      <div className="dashboard-stat-line mb-8">
         
         {/* Credits summary */}
-        <div className="glass-panel p-6 rounded-2xl flex flex-col justify-between">
+        <div className="dashboard-stat">
           <div className="text-zinc-500 text-xs uppercase tracking-wider font-semibold">Idea Credits</div>
           <div className="mt-2 text-2xl font-extrabold text-white">
             {user.tier === "pro" ? "Unlimited" : user.credits_remaining}
@@ -146,20 +175,20 @@ export default function DashboardPage() {
           <div className="text-zinc-600 text-[10.5px] mt-1">Free tier gets 3 credits</div>
         </div>
 
-        <div className="glass-panel p-6 rounded-2xl flex flex-col justify-between">
+        <div className="dashboard-stat">
           <div className="text-zinc-500 text-xs uppercase tracking-wider font-semibold">Resume Credits</div>
           <div className="mt-2 text-2xl font-extrabold text-white">{user.resume_credits_remaining}</div>
           <div className="text-zinc-600 text-[10.5px] mt-1">Free gets 1, Pro gets 10</div>
         </div>
 
-        <div className="glass-panel p-6 rounded-2xl flex flex-col justify-between">
+        <div className="dashboard-stat">
           <div className="text-zinc-500 text-xs uppercase tracking-wider font-semibold">Total Resumes</div>
           <div className="mt-2 text-2xl font-extrabold text-white">{resumes.length}</div>
           <div className="text-zinc-600 text-[10.5px] mt-1">Saved variations</div>
         </div>
 
         {/* Upgrade card */}
-        <div className="glass-panel p-6 rounded-2xl bg-gradient-to-tr from-indigo-500/10 to-violet-500/10 border-indigo-500/20 flex flex-col justify-between">
+        <div className="dashboard-stat dashboard-stat-account">
           <div>
             <div className="text-indigo-400 text-xs uppercase tracking-wider font-bold flex items-center gap-1">
               <Sparkles className="h-3 w-3" /> Account: {user.tier.toUpperCase()}
@@ -182,10 +211,10 @@ export default function DashboardPage() {
       </div>
 
       {/* Main Actions Container */}
-      <div className="grid md:grid-cols-2 gap-8 mb-12">
+      <div className="grid md:grid-cols-2 gap-px overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.08] mb-12">
         
         {/* Run Idea pipeline */}
-        <div className="glass-panel rounded-3xl p-8 border border-white/5 bg-zinc-900/10 flex flex-col justify-between">
+        <div className="dashboard-action flex flex-col justify-between">
           <div>
             <h3 className="font-heading font-extrabold text-2xl text-white">Generate Micro-SaaS Ideas</h3>
             <p className="text-zinc-400 text-sm mt-2">
@@ -204,7 +233,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Build Resume */}
-        <div className="glass-panel rounded-3xl p-8 border border-white/5 bg-zinc-900/10 flex flex-col justify-between">
+        <div className="dashboard-action flex flex-col justify-between">
           <div>
             <h3 className="font-heading font-extrabold text-2xl text-white">Create Undetectable Resume</h3>
             <p className="text-zinc-400 text-sm mt-2">
@@ -424,29 +453,6 @@ export default function DashboardPage() {
           )}
         </div>
       )}
-
-      {/* Developer seed bypass buttons */}
-      <div className="mt-20 border-t border-white/5 pt-8 flex flex-col items-center gap-4">
-        <span className="text-zinc-600 text-xs font-semibold uppercase tracking-wider">Developer controls (Local Run Helper)</span>
-        <div className="flex flex-wrap justify-center gap-3">
-          <button 
-            onClick={handleDemoUpgrade}
-            className="rounded-xl border border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/10 py-2 px-4 text-xs font-bold text-amber-300"
-          >
-            Upgrade Demo to PRO Tier
-          </button>
-          <button 
-            onClick={() => {
-              localStorage.removeItem("token");
-              localStorage.removeItem("user");
-              window.location.reload();
-            }}
-            className="rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 py-2 px-4 text-xs font-bold text-zinc-300"
-          >
-            Reset/Logout Session
-          </button>
-        </div>
-      </div>
 
       {/* Quick Tailor Modal */}
       {tailorModalOpen && (

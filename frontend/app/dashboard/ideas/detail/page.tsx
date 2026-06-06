@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { api } from "@/lib/api";
@@ -11,6 +11,14 @@ import {
 } from "lucide-react";
 
 export default function IdeaDetailPage() {
+  return <Suspense fallback={<DetailLoading />}><IdeaDetailContent /></Suspense>;
+}
+
+function DetailLoading() {
+  return <div className="flex min-h-screen items-center justify-center bg-black"><div className="h-8 w-8 animate-spin rounded-full border-4 border-cyan-400 border-t-transparent" /></div>;
+}
+
+function IdeaDetailContent() {
   const searchParams = useSearchParams();
   const ideaId = searchParams.get("id");
   const { user, setUpgradeModal } = useAppStore();
